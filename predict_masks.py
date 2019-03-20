@@ -61,29 +61,55 @@ print('Getting and resizing test images ... ')
 
 sys.stdout.flush()
 for i, test_id in enumerate(os.listdir(TEST_PATH)):  # loop through test_ids in the test_path
-    img = imread('{0}/{1}/images/{1}.png'.format(TEST_PATH , test_id))[:,:,:IMG_CHANNELS]
+    img = imread('{0}/{1}/images/{1}.png'.format(TEST_PATH, test_id))[:, :, :IMG_CHANNELS]
     img = resize(img, (IMG_HEIGHT, IMG_WIDTH), mode='constant', preserve_range=True)
     X_test[i] = img
 
 print('Done!')
 
+print('Predicting masks ...')
+
 # Predict on val
 Y_test_predicted = model.predict(X_test, verbose=1)
 # Threshold predictions
-Y_test_predicted = (Y_test_predicted>0.5).astype(np.uint8)
+Y_test_predicted = (Y_test_predicted > 0.5).astype(np.uint8)
+
+print('Done!')
+
+print('Upsampling masks to original size and saving results ...')
 
 # Upsample Y_test back to the original X_test size (height and width)
 Y_test_upsampled = []
 for i, test_id in enumerate(os.listdir(TEST_PATH)):  # loop through test_ids in the test_path
-    img = imread('{0}/{1}/images/{1}.png'.format(TEST_PATH , test_id))  # read original test image directly from path
-    img_upscaled = resize(Y_test_predicted[i], (img.shape[0], img.shape[1]), mode='constant', preserve_range=True)  # upscale Y_test image according to original test image
-    Y_test_upsampled.append(img_upscaled)   # append upscaled image to Y_test_upsampled
+    img = imread('{0}/{1}/images/{1}.png'.format(TEST_PATH, test_id))  # read original test image directly from path
+    img_upscaled = resize(Y_test_predicted[i], (img.shape[0], img.shape[1]), mode='constant',
+                          preserve_range=True)  # upscale Y_test image according to original test image
+    Y_test_upsampled.append(img_upscaled)  # append upscaled image to Y_test_upsampled
+    plt.imsave('./output/{0}.jpg'.format(test_id), np.dstack((img_upscaled, img_upscaled, img_upscaled)))
 
-len(Y_test_upsampled)
+print('Done!')
 
-id = 31
-print(X_test[id].shape)
-imshow(X_test[id])
-plt.show()
-imshow(Y_test_upsampled[id][:,:,0])
+#
+original_images = []
+for i, test_id in enumerate(os.listdir(TEST_PATH)):  # loop through test_ids in the test_path
+    img = imread('{0}/{1}/images/{1}.png'.format(TEST_PATH, test_id))  # read original test image directly from path
+    original_images.append(img)  # append upscaled image to Y_test_upsampled
+
+
+def show_images(images, masks):
+    plt.close('all')
+
+    nrows = 5
+    idx = random.sample(range(0, len(images)), nrows)
+    fig, ax = plt.subplots(nrows=nrows, ncols=2, figsize=(8, 6))
+    ax[0, 0].set_title('Images')
+    ax[0, 1].set_title('Masks')
+    for subplot_idx, img_idx in enumerate(idx):
+        ax[subplot_idx, 0].imshow(images[img_idx])
+
+        plt.gray()
+        ax[subplot_idx, 1].imshow(masks[img_idx].reshape(masks[img_idx].shape[0:2]))
+
+
+show_images(original_images, Y_test_upsampled)
 plt.show()

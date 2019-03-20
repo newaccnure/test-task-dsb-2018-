@@ -202,31 +202,3 @@ model.fit_generator(train_generator, validation_data=val_generator,
                     epochs=30, callbacks=[checkpointer])
 
 
-def dice(im1, im2):
-    im1 = np.asarray(im1).astype(np.bool)
-    im2 = np.asarray(im2).astype(np.bool)
-
-    if im1.shape != im2.shape:
-        raise ValueError("Shape mismatch: im1 and im2 must have the same shape.")
-
-    # Compute Dice coefficient
-    intersection = np.logical_and(im1, im2)
-
-    return 2. * intersection.sum() / (im1.sum() + im2.sum())
-
-
-Y_val_predicted = model.predict(X_val, verbose=1)
-Y_val_predicted = Y_val_predicted > 0.5
-
-dice_coefs = np.array([])
-for i in range(Y_val.shape[0]):
-    dice_coefs = np.append(dice_coefs, dice(Y_val[i], Y_val_predicted[i]))
-
-id = np.argmin(dice_coefs)
-
-imshow(X_val[id])
-plt.show()
-imshow(Y_val[id][:, :, 0])
-plt.show()
-imshow(Y_val_predicted[id][:, :, 0])
-plt.show()
