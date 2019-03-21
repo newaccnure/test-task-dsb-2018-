@@ -1,33 +1,15 @@
 import os
-import sys
 import random
+import sys
 import warnings
 
-import numpy as np
-
-import pandas as pd
-import tensorflow as tf
-
-from tqdm import tqdm
-from itertools import chain
-
 import matplotlib.pyplot as plt
-from skimage.io import imread, imshow, imread_collection, concatenate_images
-from skimage.transform import resize
-from skimage.morphology import label
-
-from keras.models import Model, load_model
-from keras.layers import Input
-from keras.layers.core import Dropout, Lambda
-from keras.layers.convolutional import Conv2D, Conv2DTranspose
-from keras.layers.pooling import MaxPooling2D
-from keras.layers.merge import concatenate
-from keras.callbacks import EarlyStopping, ModelCheckpoint
+import numpy as np
 from keras import backend as K
 from keras.losses import binary_crossentropy
-from keras.preprocessing.image import ImageDataGenerator
-
-from sklearn.model_selection import train_test_split
+from keras.models import load_model
+from skimage.io import imread
+from skimage.transform import resize
 
 
 # Custom Dice coef metric
@@ -78,6 +60,12 @@ print('Done!')
 
 print('Upsampling masks to original size and saving results ...')
 
+# Create output directory
+dirName = 'output'
+# Create target Directory if don't exist
+if not os.path.exists(dirName):
+    os.mkdir(dirName)
+
 # Upsample Y_test back to the original X_test size (height and width)
 Y_test_upsampled = []
 for i, test_id in enumerate(os.listdir(TEST_PATH)):  # loop through test_ids in the test_path
@@ -103,7 +91,7 @@ def show_images(images, masks):
     idx = random.sample(range(0, len(images)), nrows)
     fig, ax = plt.subplots(nrows=nrows, ncols=2, figsize=(8, 6))
     ax[0, 0].set_title('Images')
-    ax[0, 1].set_title('Masks')
+    ax[0, 1].set_title('Predicted masks')
     for subplot_idx, img_idx in enumerate(idx):
         ax[subplot_idx, 0].imshow(images[img_idx])
 

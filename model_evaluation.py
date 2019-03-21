@@ -1,35 +1,18 @@
 import os
-import sys
 import random
+import sys
 import warnings
 
-import numpy as np
-
-import pandas as pd
-import tensorflow as tf
-
-from tqdm import tqdm
-from itertools import chain
-
 import matplotlib.pyplot as plt
-from skimage.io import imread, imshow, imread_collection, concatenate_images
+import numpy as np
+import pandas as pd
+from keras import backend as K
+from keras.losses import binary_crossentropy
+from keras.models import load_model
+from skimage.io import imread
 from skimage.transform import resize
-from skimage.morphology import label
-
-from keras.models import Model, load_model
-from keras.layers import Input
-from keras.layers.core import Dropout, Lambda
-from keras.layers.convolutional import Conv2D, Conv2DTranspose
-from keras.layers.pooling import MaxPooling2D
-from keras.layers.merge import concatenate
-from keras.callbacks import EarlyStopping, ModelCheckpoint
-from keras import backend as K
-from keras.losses import binary_crossentropy
-from keras.preprocessing.image import ImageDataGenerator
-
 from sklearn.model_selection import train_test_split
-from keras import backend as K
-from keras.losses import binary_crossentropy
+from tqdm import tqdm
 
 
 # Custom Dice coef metric
@@ -117,3 +100,23 @@ print('Evaluation of predicted masks on validation set(dice coefficients):')
 print(dice_coefs.describe())
 
 print('Number of dice coefficients below 0.4: {0}'.format((dice_coefs < 0.4).sum()))
+
+
+def show_images(images, masks):
+    plt.close('all')
+
+    nrows = 5
+    idx = random.sample(range(0, len(images)), nrows)
+    fig, ax = plt.subplots(nrows=nrows, ncols=2, figsize=(8, 6))
+    ax[0, 0].set_title('Masks')
+    ax[0, 1].set_title('Predicted masks')
+    for subplot_idx, img_idx in enumerate(idx):
+        plt.gray()
+        ax[subplot_idx, 0].imshow(images[img_idx].reshape(masks[img_idx].shape[0:2]))
+
+        plt.gray()
+        ax[subplot_idx, 1].imshow(masks[img_idx].reshape(masks[img_idx].shape[0:2]))
+    plt.show()
+
+
+show_images(Y_val, Y_val_predicted)
